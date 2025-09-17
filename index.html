@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JEE Fibonacci Revision Scheduler</title>
+<title>JEE Revision</title>
 <style>
+/* Fibonacci-themed design */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f9f9f9;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(135deg, #fdfcfb, #e2d1c3);
     color: #2c3e50;
     margin: 0;
     padding: 20px;
@@ -15,87 +16,121 @@ body {
     flex-direction: column;
     align-items: center;
 }
-h1, h2 {
-    color: #34495e;
+h1 {
+    font-size: 34px; /* Fibonacci step */
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+.grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: 2fr 3fr; /* Fibonacci ratio 2:3 */
+    max-width: 1000px;
+    width: 100%;
+}
+.card {
+    background: white;
+    border-radius: 21px; /* Fibonacci step */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    padding: 20px;
 }
 input, button {
-    padding: 10px;
+    padding: 13px; /* Fibonacci step */
     margin: 5px;
     font-size: 16px;
-    border-radius: 5px;
+    border-radius: 8px;
     border: 1px solid #ccc;
 }
 button {
-    background-color: #2980b9;
+    background: #2980b9;
     color: white;
-    cursor: pointer;
     font-weight: bold;
     border: none;
+    transition: 0.3s;
 }
 button:hover {
-    background-color: #1f618d;
+    background: #1f618d;
+    transform: translateY(-2px);
 }
 table {
-    margin-top: 20px;
+    margin-top: 15px;
     border-collapse: collapse;
-    width: 90%;
+    width: 100%;
 }
 th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
+    border: 1px solid #ddd;
+    padding: 12px;
     text-align: center;
 }
 th {
-    background-color: #ecf0f1;
+    background-color: #f4f6f7;
+    font-weight: bold;
 }
 .done-btn {
-    padding: 5px 10px;
+    padding: 6px 12px;
     background-color: #27ae60;
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
+    transition: 0.3s;
 }
 .done-btn:hover {
     background-color: #1e8449;
 }
 #todayRevision {
     margin-top: 10px;
+    padding: 15px;
+    background: #fef9e7;
+    border-left: 5px solid #f39c12;
+    border-radius: 10px;
+}
+#todayRevision li {
+    margin: 8px 0;
+    font-size: 18px;
 }
 </style>
 </head>
 <body>
 
-<h1>JEE Fibonacci Revision Scheduler</h1>
+<h1>📘 JEE Fibonacci Revision Scheduler</h1>
 
-<label for="topic">Topic Name:</label>
-<input type="text" id="topic" placeholder="Enter topic">
-<button onclick="addTopic()">Add Topic</button>
+<div class="grid">
+    <div class="card">
+        <h2>➕ Add New Topic</h2>
+        <input type="text" id="topic" placeholder="Enter topic">
+        <button onclick="addTopic()">Add</button>
+    </div>
 
-<h2>Revision Schedule</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Topic</th>
-            <th>Next Revision Date</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody id="scheduleTable"></tbody>
-</table>
+    <div class="card">
+        <h2>📅 Revision Schedule</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Topic</th>
+                    <th>Next Revision Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleTable"></tbody>
+        </table>
+    </div>
+</div>
 
-<h2>Today's Revision</h2>
-<ul id="todayRevision"></ul>
+<div class="card" style="margin-top:20px; width:80%;">
+    <h2>🔥 Today's Revision</h2>
+    <ul id="todayRevision"></ul>
+</div>
 
 <script>
-// Fibonacci sequence generator
+// Fibonacci generator
 function fibonacci(n) {
     let fib = [1,1];
     for(let i=2;i<n;i++) fib[i]=fib[i-1]+fib[i-2];
     return fib.slice(0,n);
 }
 
-// Load topics from localStorage
+// Load/save topics
 let topics = JSON.parse(localStorage.getItem('topics') || '[]');
 function saveTopics(){ localStorage.setItem('topics', JSON.stringify(topics)); }
 
@@ -111,7 +146,7 @@ function addTopic() {
     document.getElementById('topic').value="";
 }
 
-// Get next revision date
+// Next revision date
 function getNextRevision(topic){
     let fibDays = fibonacci(20);
     let lastDate = new Date(topic.lastRevision);
@@ -119,7 +154,7 @@ function getNextRevision(topic){
     return lastDate.toISOString().split('T')[0];
 }
 
-// Mark done
+// Mark topic done
 function markDone(index){
     topics[index].lastRevision = new Date().toISOString().split('T')[0];
     topics[index].fibIndex = Math.min(topics[index].fibIndex + 1,19);
@@ -134,177 +169,56 @@ function renderTable(){
     table.innerHTML = "";
     topics.forEach((topic,i)=>{
         let row=document.createElement('tr');
-        let nameCell=document.createElement('td'); nameCell.innerText=topic.name; row.appendChild(nameCell);
-        let dateCell=document.createElement('td'); dateCell.innerText=getNextRevision(topic); row.appendChild(dateCell);
-        let actionCell=document.createElement('td');
-        let btn=document.createElement('button'); btn.className='done-btn'; btn.innerText='Mark Done'; btn.onclick=()=>markDone(i);
-        actionCell.appendChild(btn); row.appendChild(actionCell);
+        row.innerHTML = `
+            <td>${topic.name}</td>
+            <td>${getNextRevision(topic)}</td>
+            <td><button class="done-btn" onclick="markDone(${i})">Mark Done</button></td>
+        `;
         table.appendChild(row);
     });
 }
 
-// Render today's revision
+// Render today's revision + notify
 function renderTodayRevision(){
     let todayStr=new Date().toISOString().split('T')[0];
-    let list=document.getElementById('todayRevision'); list.innerHTML="";
+    let list=document.getElementById('todayRevision'); 
+    list.innerHTML="";
+    let todayTopics = [];
     topics.forEach(topic=>{
         if(getNextRevision(topic)===todayStr){
-            let li=document.createElement('li'); li.innerText=topic.name; list.appendChild(li);
+            let li=document.createElement('li');
+            li.innerText=topic.name;
+            list.appendChild(li);
+            todayTopics.push(topic.name);
         }
     });
+    if(todayTopics.length>0) notifyUser(todayTopics);
+}
+
+// Browser notification
+function notifyUser(topics){
+    if("Notification" in window){
+        if(Notification.permission==="granted"){
+            new Notification("📘 JEE Revision Today", {
+                body: "Revise: " + topics.join(", "),
+                icon: "https://cdn-icons-png.flaticon.com/512/2921/2921222.png"
+            });
+        } else if(Notification.permission!=="denied"){
+            Notification.requestPermission().then(perm=>{
+                if(perm==="granted"){
+                    notifyUser(topics);
+                }
+            });
+        }
+    }
 }
 
 // Initial render
 renderTable();
 renderTodayRevision();
-setInterval(renderTodayRevision, 60*60*1000);
-</script>
 
-</body>
-</html>
-    saveTopics();
-    renderTable();
-    renderTodayRevision();
-    document.getElementById('topic').value = "";
-}
-
-// Get next revision date
-function getNextRevision(topic) {
-    let fibDays = fibonacci(20);
-    let lastDate = new Date(topic.lastRevision);
-    lastDate.setDate(lastDate.getDate() + fibDays[topic.fibIndex]);
-    return lastDate.toISOString().split('T')[0];
-}
-
-// Mark done
-function markDone(index) {
-    topics[index].lastRevision = new Date().toISOString().split('T')[0];
-    topics[index].fibIndex = Math.min(topics[index].fibIndex + 1, 19);
-    saveTopics();
-    renderTable();
-    renderTodayRevision();
-}
-
-// Render table
-function renderTable() {
-    let table = document.getElementById('scheduleTable');
-    table.innerHTML = "";
-    topics.forEach((topic,i)=>{
-        let row = document.createElement('tr');
-        let nameCell = document.createElement('td'); nameCell.innerText = topic.name; row.appendChild(nameCell);
-        let datesCell = document.createElement('td'); datesCell.innerText = getNextRevision(topic); row.appendChild(datesCell);
-        let actionCell = document.createElement('td');
-        let btn = document.createElement('button'); btn.className='done-btn'; btn.innerText='Mark Done'; btn.onclick=()=>markDone(i);
-        actionCell.appendChild(btn); row.appendChild(actionCell);
-        table.appendChild(row);
-    });
-}
-
-// Render today's revision
-function renderTodayRevision() {
-    let todayStr = new Date().toISOString().split('T')[0];
-    let list = document.getElementById('todayRevision');
-    list.innerHTML = "";
-    topics.forEach(topic=>{
-        if(getNextRevision(topic)===todayStr){
-            let li=document.createElement('li'); li.innerText=topic.name; list.appendChild(li);
-        }
-    });
-}
-
-// Initial render
-renderTable();
-renderTodayRevision();
-setInterval(renderTodayRevision, 60*60*1000);
-</script>
-
-</body>
-</html>
-    "Tu banta hai, tu banega, bas shuru kar! 🚀"
-];
-
-// Random SRK-style quote
-function srkMotivate() {
-    const index = Math.floor(Math.random() * srkQuotes.length);
-    document.getElementById('srkMessage').innerText = srkQuotes[index];
-}
-
-// Fibonacci sequence generator
-function fibonacci(n) {
-    let fib = [1,1];
-    for(let i=2; i<n; i++) fib[i] = fib[i-1]+fib[i-2];
-    return fib.slice(0,n);
-}
-
-// Load topics from localStorage
-let topics = JSON.parse(localStorage.getItem('topics') || '[]');
-function saveTopics() { localStorage.setItem('topics', JSON.stringify(topics)); }
-
-// Add topic
-function addTopic() {
-    let topicName = document.getElementById('topic').value.trim();
-    if(!topicName){ alert("Enter a topic!"); return; }
-    let today = new Date().toISOString().split('T')[0];
-    topics.push({name: topicName, fibIndex:0, lastRevision:today});
-    saveTopics();
-    renderTable();
-    renderTodayRevision();
-    srkMotivate();
-    document.getElementById('topic').value = "";
-}
-
-// Get next revision date
-function getNextRevision(topic){
-    let fibDays = fibonacci(20);
-    let lastDate = new Date(topic.lastRevision);
-    lastDate.setDate(lastDate.getDate() + fibDays[topic.fibIndex]);
-    return lastDate.toISOString().split('T')[0];
-}
-
-// Mark done
-function markDone(index){
-    topics[index].lastRevision = new Date().toISOString().split('T')[0];
-    topics[index].fibIndex = Math.min(topics[index].fibIndex+1,19);
-    saveTopics();
-    renderTable();
-    renderTodayRevision();
-    srkMotivate();
-}
-
-// Render table
-function renderTable(){
-    let table = document.getElementById('scheduleTable');
-    table.innerHTML = "";
-    topics.forEach((topic,i)=>{
-        let row = document.createElement('tr');
-        let nameCell = document.createElement('td'); nameCell.innerText = topic.name; row.appendChild(nameCell);
-        let datesCell = document.createElement('td'); datesCell.innerText = getNextRevision(topic); row.appendChild(datesCell);
-        let actionCell = document.createElement('td');
-        let btn = document.createElement('button'); btn.className='done-btn'; btn.innerText='Mark Done'; btn.onclick=()=>markDone(i);
-        actionCell.appendChild(btn); row.appendChild(actionCell);
-        table.appendChild(row);
-    });
-}
-
-// Today's revision
-function renderTodayRevision(){
-    let todayStr = new Date().toISOString().split('T')[0];
-    let list = document.getElementById('todayRevision'); list.innerHTML="";
-    topics.forEach(topic=>{
-        if(getNextRevision(topic)===todayStr){
-            let li=document.createElement('li'); li.innerText=topic.name; list.appendChild(li);
-        }
-    });
-}
-
-// Initial render
-renderTable();
-renderTodayRevision();
-srkMotivate();
-
-// Optional: refresh every hour
-setInterval(renderTodayRevision, 60*60*1000);
-
+// Refresh daily
+setInterval(renderTodayRevision, 24*60*60*1000);
 </script>
 </body>
 </html>
