@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JEE Fibonacci Revision Scheduler - SRK Style</title>
+<style>
+body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(to right, #f0c27b, #4b1248);
+    color: #fff;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+h1 {
+    color: #ffeb3b;
+    text-shadow: 2px 2px #000;
+}
+input, button {
+    padding: 10px;
+    margin: 5px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+}
+button {
+    background-color: #ff5722;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+button:hover {
+    background-color: #e64a19;
+}
+table {
+    margin-top: 20px;
+    border-collapse: collapse;
+    width: 90%;
+    color: #fff;
+}
+th, td {
+    border: 1px solid #fff;
+    padding: 10px;
+    text-align: center;
+}
+th {
+    background-color: rgba(0,0,0,0.5);
+}
+.done-btn {
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+}
+.done-btn:hover {
+    background-color: #388e3c;
+}
+#srkMessage {
+    margin-top: 15px;
+    font-size: 18px;
+    font-style: italic;
+    color: #ffeb3b;
+    text-shadow: 1px 1px #000;
+    max-width: 800px;
+    text-align: center;
+}
+</style>
+</head>
+<body>
+
+<h1>JEE Fibonacci Revision Scheduler - SRK Style 😎</h1>
+
+<label for="topic">Topic Name:</label>
+<input type="text" id="topic" placeholder="Enter topic">
+<button onclick="addTopic()">Add Topic</button>
+
+<div id="srkMessage">“Life ka syllabus tough hai, par tu aur tough hai!”</div>
+
+<h2>Revision Schedule</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Topic</th>
+            <th>Next Revision Dates</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="scheduleTable"></tbody>
+</table>
+
+<h2>Today's Revision</h2>
+<ul id="todayRevision"></ul>
+
+<script>
+// SRK-style motivational quotes
+const srkQuotes = [
+    "Bhai, yaad karna is the only way to conquer! 🔥",
+    "Koi shortcut nahi hai, bas focus aur dedication! 😎",
+    "Life mein hero ban na hai, toh revision kar! 💪",
+    "Chhoti chhoti jeets hi badi jeets ka raasta hai! 🏆",
+    "Tu JEE ka Shahenshah banega, bas revision karte reh! 👑",
+    "Har question ek villain hai, tu hero! 🦸",
+    "Aaj ka revision, kal ka trophy! 🏅",
+    "Tu banta hai, tu banega, bas shuru kar! 🚀"
+];
+
+// Random SRK-style quote
+function srkMotivate() {
+    const index = Math.floor(Math.random() * srkQuotes.length);
+    document.getElementById('srkMessage').innerText = srkQuotes[index];
+}
+
+// Fibonacci sequence generator
+function fibonacci(n) {
+    let fib = [1,1];
+    for(let i=2; i<n; i++) fib[i] = fib[i-1]+fib[i-2];
+    return fib.slice(0,n);
+}
+
+// Load topics from localStorage
+let topics = JSON.parse(localStorage.getItem('topics') || '[]');
+function saveTopics() { localStorage.setItem('topics', JSON.stringify(topics)); }
+
+// Add topic
+function addTopic() {
+    let topicName = document.getElementById('topic').value.trim();
+    if(!topicName){ alert("Enter a topic!"); return; }
+    let today = new Date().toISOString().split('T')[0];
+    topics.push({name: topicName, fibIndex:0, lastRevision:today});
+    saveTopics();
+    renderTable();
+    renderTodayRevision();
+    srkMotivate();
+    document.getElementById('topic').value = "";
+}
+
+// Get next revision date
+function getNextRevision(topic){
+    let fibDays = fibonacci(20);
+    let lastDate = new Date(topic.lastRevision);
+    lastDate.setDate(lastDate.getDate() + fibDays[topic.fibIndex]);
+    return lastDate.toISOString().split('T')[0];
+}
+
+// Mark done
+function markDone(index){
+    topics[index].lastRevision = new Date().toISOString().split('T')[0];
+    topics[index].fibIndex = Math.min(topics[index].fibIndex+1,19);
+    saveTopics();
+    renderTable();
+    renderTodayRevision();
+    srkMotivate();
+}
+
+// Render table
+function renderTable(){
+    let table = document.getElementById('scheduleTable');
+    table.innerHTML = "";
+    topics.forEach((topic,i)=>{
+        let row = document.createElement('tr');
+        let nameCell = document.createElement('td'); nameCell.innerText = topic.name; row.appendChild(nameCell);
+        let datesCell = document.createElement('td'); datesCell.innerText = getNextRevision(topic); row.appendChild(datesCell);
+        let actionCell = document.createElement('td');
+        let btn = document.createElement('button'); btn.className='done-btn'; btn.innerText='Mark Done'; btn.onclick=()=>markDone(i);
+        actionCell.appendChild(btn); row.appendChild(actionCell);
+        table.appendChild(row);
+    });
+}
+
+// Today's revision
+function renderTodayRevision(){
+    let todayStr = new Date().toISOString().split('T')[0];
+    let list = document.getElementById('todayRevision'); list.innerHTML="";
+    topics.forEach(topic=>{
+        if(getNextRevision(topic)===todayStr){
+            let li=document.createElement('li'); li.innerText=topic.name; list.appendChild(li);
+        }
+    });
+}
+
+// Initial render
+renderTable();
+renderTodayRevision();
+srkMotivate();
+
+// Optional: refresh every hour
+setInterval(renderTodayRevision, 60*60*1000);
+
+</script>
+</body>
+</html>
