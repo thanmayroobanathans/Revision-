@@ -8,7 +8,7 @@
 body {
     font-family: Arial, sans-serif;
     background-color: #f9f9f9;
-    color: #333;
+    color: #2c3e50;
     margin: 0;
     padding: 20px;
     display: flex;
@@ -16,7 +16,7 @@ body {
     align-items: center;
 }
 h1, h2 {
-    color: #2c3e50;
+    color: #34495e;
 }
 input, button {
     padding: 10px;
@@ -91,24 +91,77 @@ th {
 // Fibonacci sequence generator
 function fibonacci(n) {
     let fib = [1,1];
-    for (let i=2; i<n; i++) fib[i] = fib[i-1] + fib[i-2];
+    for(let i=2;i<n;i++) fib[i]=fib[i-1]+fib[i-2];
     return fib.slice(0,n);
 }
 
 // Load topics from localStorage
 let topics = JSON.parse(localStorage.getItem('topics') || '[]');
-
-// Save topics to localStorage
-function saveTopics() {
-    localStorage.setItem('topics', JSON.stringify(topics));
-}
+function saveTopics(){ localStorage.setItem('topics', JSON.stringify(topics)); }
 
 // Add topic
 function addTopic() {
     let topicName = document.getElementById('topic').value.trim();
-    if (!topicName) { alert("Please enter a topic"); return; }
+    if(!topicName){ alert("Please enter a topic"); return; }
     let today = new Date().toISOString().split('T')[0];
     topics.push({name: topicName, fibIndex:0, lastRevision:today});
+    saveTopics();
+    renderTable();
+    renderTodayRevision();
+    document.getElementById('topic').value="";
+}
+
+// Get next revision date
+function getNextRevision(topic){
+    let fibDays = fibonacci(20);
+    let lastDate = new Date(topic.lastRevision);
+    lastDate.setDate(lastDate.getDate() + fibDays[topic.fibIndex]);
+    return lastDate.toISOString().split('T')[0];
+}
+
+// Mark done
+function markDone(index){
+    topics[index].lastRevision = new Date().toISOString().split('T')[0];
+    topics[index].fibIndex = Math.min(topics[index].fibIndex + 1,19);
+    saveTopics();
+    renderTable();
+    renderTodayRevision();
+}
+
+// Render table
+function renderTable(){
+    let table = document.getElementById('scheduleTable');
+    table.innerHTML = "";
+    topics.forEach((topic,i)=>{
+        let row=document.createElement('tr');
+        let nameCell=document.createElement('td'); nameCell.innerText=topic.name; row.appendChild(nameCell);
+        let dateCell=document.createElement('td'); dateCell.innerText=getNextRevision(topic); row.appendChild(dateCell);
+        let actionCell=document.createElement('td');
+        let btn=document.createElement('button'); btn.className='done-btn'; btn.innerText='Mark Done'; btn.onclick=()=>markDone(i);
+        actionCell.appendChild(btn); row.appendChild(actionCell);
+        table.appendChild(row);
+    });
+}
+
+// Render today's revision
+function renderTodayRevision(){
+    let todayStr=new Date().toISOString().split('T')[0];
+    let list=document.getElementById('todayRevision'); list.innerHTML="";
+    topics.forEach(topic=>{
+        if(getNextRevision(topic)===todayStr){
+            let li=document.createElement('li'); li.innerText=topic.name; list.appendChild(li);
+        }
+    });
+}
+
+// Initial render
+renderTable();
+renderTodayRevision();
+setInterval(renderTodayRevision, 60*60*1000);
+</script>
+
+</body>
+</html>
     saveTopics();
     renderTable();
     renderTodayRevision();
